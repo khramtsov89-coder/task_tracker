@@ -52,3 +52,7 @@ def test_delete_existing_task(client):
     created = client.post("/tasks", json={"title": "Временная задача"}).get_json()
     resp = client.delete(f"/tasks/{created['id']}")
     assert resp.status_code == 200
+
+def test_delete_existing_task_return_404(client):   
+    resp = client.delete("/tasks/9999")
+    assert resp.status_code == 404

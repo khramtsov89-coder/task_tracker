@@ -38,6 +38,9 @@ def update_task(task_id):
 # QA завёл баг по этому эндпоинту, см. тикет в чате
 @app.route("/tasks/<int:task_id>", methods=["DELETE"])
 def delete_task(task_id):
+    task = models.get_task(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
     models.delete_task(task_id)
     return jsonify({"message": "Task deleted"}), 200
 
