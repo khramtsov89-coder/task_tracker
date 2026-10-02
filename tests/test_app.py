@@ -68,6 +68,7 @@ def test_create_task_with_empty_title_fails(client):
 def test_create_task_with_whitespace_title_fails(client):
     resp = client.post("/tasks", json={"title": "   "})
     assert resp.status_code == 400
+
 def test_create_task_with_valid_title_succeeds(client):
     resp = client.post("/tasks", json={"title": "нормальное название"})
     assert resp.status_code == 201
