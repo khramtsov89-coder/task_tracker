@@ -53,6 +53,21 @@ def test_delete_existing_task(client):
     resp = client.delete(f"/tasks/{created['id']}")
     assert resp.status_code == 200
 
-def test_delete_existing_task_return_404(client):   
+def test_delete_missing_task_return_404(client):   
     resp = client.delete("/tasks/9999")
     assert resp.status_code == 404
+
+def test_create_task_without_title_fails(client):
+    resp = client.post("/tasks", json={})
+    assert resp.status_code == 400
+
+def test_create_task_with_empty_title_fails(client):
+    resp = client.post("/tasks", json={"title": ""})
+    assert resp.status_code == 400
+
+def test_create_task_with_whitespace_title_fails(client):
+    resp = client.post("/tasks", json={"title": "   "})
+    assert resp.status_code == 400
+def test_create_task_with_valid_title_succeeds(client):
+    resp = client.post("/tasks", json={"title": "нормальное название"})
+    assert resp.status_code == 201

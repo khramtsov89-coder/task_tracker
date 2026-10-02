@@ -14,6 +14,9 @@ def list_tasks():
 def create_task():
     data = request.get_json(silent=True) or {}
     title = data.get("title")
+    if title is None or title.strip() == "":
+        return jsonify({"error": "Title is required"}), 400
+    title = title.strip()
     task = models.create_task(title)
     return jsonify(task), 201
 
