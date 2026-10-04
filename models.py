@@ -3,6 +3,13 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "tasks.db"
 
+def _serialize_task(row):
+    if row is None:
+        return None
+    task_dict = dict(row)
+    task_dict["done"] = bool(task_dict["done"])
+    return task_dict
+
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -29,17 +36,14 @@ def get_all_tasks():
     conn = get_connection()
     rows = conn.execute("SELECT * FROM tasks").fetchall()
     conn.close()
-    tasks = [dict(row) for row in rows]
-    for task in tasks:
-        task["done"] = bool(task["done"])
-    return tasks
+    return [_serialize_task(row) for row in rows]
 
 
 def get_task(task_id):
     conn = get_connection()
     row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
     conn.close()
-    return dict(row) if row else None
+    return _serialize_task(row)
 
 
 def create_task(title):
@@ -48,7 +52,7 @@ def create_task(title):
     conn.commit()
     task_id = cur.lastrowid
     conn.close()
-    return get_task(task_id)
+    return get_task(task_id)    
 
 
 def update_task(task_id, title=None, done=None):

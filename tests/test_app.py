@@ -45,7 +45,7 @@ def test_update_task(client):
     created = client.post("/tasks", json={"title": "Написать доку"}).get_json()
     resp = client.put(f"/tasks/{created['id']}", json={"done": True})
     assert resp.status_code == 200
-    assert resp.get_json()["done"] == 1
+    assert resp.get_json()["done"] is True
 
 
 def test_delete_existing_task(client):
@@ -91,7 +91,7 @@ def test_filter_tasks_by_done_true(client):
     tasks = resp.json
     assert len(tasks) == 1
     assert tasks[0]["id"] == task2_id
-    assert tasks[0]["done"] == True
+    assert tasks[0]["done"] is True
 
 
 def test_filter_tasks_by_done_false(client):
@@ -115,7 +115,7 @@ def test_filter_tasks_by_done_false(client):
     tasks = resp.json
     assert len(tasks) == 1
     assert tasks[0]["id"] == task1_id
-    assert tasks[0]["done"] == False
+    assert tasks[0]["done"] is False
 
 
 def test_filter_tasks_no_filter(client):
@@ -143,3 +143,39 @@ def test_filter_tasks_no_filter(client):
     task_ids = [task["id"] for task in tasks]
     assert task1_id in task_ids
     assert task2_id in task_ids
+
+def test_get_task_returns_boolean_done(client):
+    # Создать задачу
+    resp = client.post("/tasks", json={"title": "Тестовая задача"})
+    assert resp.status_code == 201
+    task_id = resp.json["id"]
+    
+    # Получить задачу через GET /tasks/<id>
+    resp = client.get(f"/tasks/{task_id}")
+    assert resp.status_code == 200
+    
+    # Проверить, что done - это булево значение False, а не 0
+    task = resp.json
+    assert task["done"] is False
+    assert isinstance(task["done"], bool)
+
+
+def test_update_task_returns_boolean_done(client):
+    # Создать задачу
+    resp = client.post("/tasks", json={"title": "Тестовая задача"})
+    assert resp.status_code == 201
+    task_id = resp.json["id"]
+    
+    # Обновить задачу через PUT, установив done=True
+    resp = client.put(f"/tasks/{task_id}", json={"done": True})
+    assert resp.status_code == 200
+    
+    # Проверить, что в ответе done - это булево значение True, а не 1
+    task = resp.json
+    assert task["done"] is True
+    assert isinstance(task["done"], bool)
+    
+    # Дополнительная проверка: получить задачу через GET и убедиться
+    resp = client.get(f"/tasks/{task_id}")
+    assert resp.status_code == 200
+    assert resp.json["done"] is True
