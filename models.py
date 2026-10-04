@@ -29,7 +29,10 @@ def get_all_tasks():
     conn = get_connection()
     rows = conn.execute("SELECT * FROM tasks").fetchall()
     conn.close()
-    return [dict(row) for row in rows]
+    tasks = [dict(row) for row in rows]
+    for task in tasks:
+        task["done"] = bool(task["done"])
+    return tasks
 
 
 def get_task(task_id):

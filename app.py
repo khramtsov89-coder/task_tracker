@@ -7,7 +7,21 @@ models.init_db()
 
 @app.route("/tasks", methods=["GET"])
 def list_tasks():
-    return jsonify(models.get_all_tasks())
+    done_status = request.args.get("done")
+    all_tasks = models.get_all_tasks()
+    
+    if done_status is not None:
+        done_status = done_status.lower()
+        if done_status == "true":
+            tasks = [task for task in all_tasks if task.get("done") is True]
+        elif done_status == "false":
+            tasks = [task for task in all_tasks if task.get("done") is False]
+        else:
+            tasks = all_tasks
+    else:
+        tasks = all_tasks
+    return jsonify(tasks)
+
 
 
 @app.route("/tasks", methods=["POST"])

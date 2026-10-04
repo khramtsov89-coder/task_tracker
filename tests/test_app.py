@@ -72,3 +72,74 @@ def test_create_task_with_whitespace_title_fails(client):
 def test_create_task_with_valid_title_succeeds(client):
     resp = client.post("/tasks", json={"title": "нормальное название"})
     assert resp.status_code == 201
+
+def test_filter_tasks_by_done_true(client):
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    task1_id = resp1.json["id"]
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+    
+    resp_update = client.put(f"/tasks/{task2_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    resp = client.get("/tasks?done=true")
+    assert resp.status_code == 200
+    
+    tasks = resp.json
+    assert len(tasks) == 1
+    assert tasks[0]["id"] == task2_id
+    assert tasks[0]["done"] == True
+
+
+def test_filter_tasks_by_done_false(client):
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    task1_id = resp1.json["id"]
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+    
+    # Через PUT пометить задачу 2 выполненной
+    resp_update = client.put(f"/tasks/{task2_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    # GET /tasks?done=false
+    resp = client.get("/tasks?done=false")
+    assert resp.status_code == 200
+    
+    # Проверить: в ответе только задача 1
+    tasks = resp.json
+    assert len(tasks) == 1
+    assert tasks[0]["id"] == task1_id
+    assert tasks[0]["done"] == False
+
+
+def test_filter_tasks_no_filter(client):
+    # Создать задачу 1 (не выполнена)
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    task1_id = resp1.json["id"]
+    
+    # Создать задачу 2
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+    
+    # Через PUT пометить задачу 2 выполненной
+    resp_update = client.put(f"/tasks/{task2_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    # GET /tasks (без фильтра)
+    resp = client.get("/tasks")
+    assert resp.status_code == 200
+    
+    # Проверить: в ответе обе задачи
+    tasks = resp.json
+    assert len(tasks) == 2
+    task_ids = [task["id"] for task in tasks]
+    assert task1_id in task_ids
+    assert task2_id in task_ids
