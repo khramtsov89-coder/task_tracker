@@ -61,6 +61,17 @@ def delete_task(task_id):
     models.delete_task(task_id)
     return jsonify({"message": "Task deleted"}), 200
 
+@app.route("/tasks/stats", methods=["GET"])
+def get_stats():
+    all_tasks = models.get_all_tasks()
+    total_tasks = len(all_tasks)
+    done_tasks = len([task for task in all_tasks if task["done"] is True])
+    pending_tasks = total_tasks - done_tasks
+    return jsonify({
+        "total": total_tasks,
+        "done": done_tasks,
+        "pending": pending_tasks
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)

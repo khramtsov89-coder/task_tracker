@@ -179,3 +179,27 @@ def test_update_task_returns_boolean_done(client):
     resp = client.get(f"/tasks/{task_id}")
     assert resp.status_code == 200
     assert resp.json["done"] is True
+
+def test_stats_with_empty_database(client):
+    resp = client.get("/tasks/stats")
+    assert resp.status_code == 200
+    assert resp.json == {"total": 0, "done": 0, "pending": 0}
+    
+    
+def test_stats_with_mixed_database(client):    
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+
+    resp3 = client.post("/tasks", json={"title": "Задача 3"})
+    assert resp3.status_code == 201
+    
+    resp_update = client    .put(f"/tasks/{task2_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    resp = client.get("/tasks/stats")
+    assert resp.status_code == 200
+    assert resp.json == {"total": 3, "done": 1, "pending": 2}    
