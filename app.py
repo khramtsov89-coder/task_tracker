@@ -73,5 +73,14 @@ def get_stats():
         "pending": pending_tasks
     })
 
+@app.route("/tasks/complete-all", methods=["POST"])
+def mass_status_done():
+    all_tasks = models.get_all_tasks()
+    for task in all_tasks:
+            models.update_task(task["id"], done = True)
+    all_tasks = models.get_all_tasks()
+    return jsonify(all_tasks)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

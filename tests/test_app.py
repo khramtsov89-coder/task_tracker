@@ -197,9 +197,40 @@ def test_stats_with_mixed_database(client):
     resp3 = client.post("/tasks", json={"title": "Задача 3"})
     assert resp3.status_code == 201
     
-    resp_update = client    .put(f"/tasks/{task2_id}", json={"done": True})
+    resp_update = client.put(f"/tasks/{task2_id}", json={"done": True})
     assert resp_update.status_code == 200
     
     resp = client.get("/tasks/stats")
     assert resp.status_code == 200
     assert resp.json == {"total": 3, "done": 1, "pending": 2}    
+
+def test_all_tasks_completed(client):    
+    task_ids = []
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    task1_id = resp1.json["id"]
+
+    resp_update = client.put(f"/tasks/{task1_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+
+    resp3 = client.post("/tasks", json={"title": "Задача 3"})
+    assert resp3.status_code == 201
+    task3_id = resp3.json["id"]
+
+    task_ids.append(task1_id)
+    task_ids.append(task2_id)
+    task_ids.append(task3_id)
+    
+    resp = client.post("/tasks/complete-all")
+    assert resp.status_code == 200
+    for task in resp.json:
+        assert task["done"] is True
+
+def test_all_tasks_completed_empty_base(client):    
+    resp = client.post("/tasks/complete-all")
+    assert resp.status_code == 200
+    assert resp.json == []
