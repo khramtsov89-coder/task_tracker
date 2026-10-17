@@ -234,3 +234,32 @@ def test_all_tasks_completed_empty_base(client):
     resp = client.post("/tasks/complete-all")
     assert resp.status_code == 200
     assert resp.json == []
+
+def test_garbage_in_done_status(client):    
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    assert resp1.status_code == 201
+    task1_id = resp1.json["id"]
+
+    resp_update = client.put(f"/tasks/{task1_id}", json={"done": True})
+    assert resp_update.status_code == 200
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    assert resp2.status_code == 201
+    task2_id = resp2.json["id"]
+
+    resp_update = client.put(f"/tasks/{task2_id}", json={"done": "yes"})
+    assert resp_update.status_code == 400
+
+    resp3 = client.post("/tasks", json={"title": "Задача 3"})
+    assert resp3.status_code == 201
+    task3_id = resp3.json["id"]
+
+    resp_update = client.put(f"/tasks/{task3_id}", json={"done": 123})
+    assert resp_update.status_code == 400
+
+    resp4 = client.post("/tasks", json={"title": "Задача 4"})
+    assert resp4.status_code == 201
+    task4_id = resp4.json["id"]
+
+    resp_update = client.put(f"/tasks/{task4_id}")
+    assert resp_update.status_code == 200

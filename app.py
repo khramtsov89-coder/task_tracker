@@ -46,6 +46,9 @@ def get_task(task_id):
 @app.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task(task_id):
     data = request.get_json(silent=True) or {}
+    done_status = data.get("done")
+    if "done" in data and not isinstance(done_status, bool) :
+        return jsonify({"error": "Не является bool"}), 400
     task = models.update_task(task_id, title=data.get("title"), done=data.get("done"))
     if not task:
         return jsonify({"error": "Task not found"}), 404
