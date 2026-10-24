@@ -8,6 +8,7 @@ models.init_db()
 @app.route("/tasks", methods=["GET"])
 def list_tasks():
     done_status = request.args.get("done")
+    sort = request.args.get("sort")
     all_tasks = models.get_all_tasks()
     
     if done_status is not None:
@@ -20,6 +21,10 @@ def list_tasks():
             tasks = all_tasks
     else:
         tasks = all_tasks
+    if sort == "created_at":
+        tasks = sorted(tasks, key=lambda t: t["created_at"])
+    elif sort == "-created_at":
+        tasks = sorted(tasks, key=lambda t: t["created_at"], reverse=True)
     return jsonify(tasks)
 
 

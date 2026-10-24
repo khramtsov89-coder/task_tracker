@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from datetime import datetime
 
 DB_PATH = Path(__file__).parent / "tasks.db"
 
@@ -25,12 +26,23 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             done INTEGER NOT NULL DEFAULT 0
+
         )
         """
     )
+    
     conn.commit()
     conn.close()
+    _ensure_created_at_column()
 
+def _ensure_created_at_column():
+    conn = get_connection()
+    columns = conn.execute("PRAGMA table_info(tasks)").fetchall()
+    column_names = [col["name"] for col in columns]
+    if "created_at" not in column_names:
+        conn.execute("alter table tasks add column created_at TEXT")
+        conn.commit()
+    conn.close()
 
 def get_all_tasks():
     conn = get_connection()
@@ -48,7 +60,8 @@ def get_task(task_id):
 
 def create_task(title):
     conn = get_connection()
-    cur = conn.execute("INSERT INTO tasks (title, done) VALUES (?, 0)", (title,))
+    created_at = datetime.now().isoformat()
+    cur = conn.execute("INSERT INTO tasks (title, done, created_at) VALUES (?, 0, ?)", (title, created_at))
     conn.commit()
     task_id = cur.lastrowid
     conn.close()
@@ -76,3 +89,4 @@ def delete_task(task_id):
     conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
+

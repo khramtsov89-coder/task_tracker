@@ -1,6 +1,7 @@
 import os
 import sys
 import pytest
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -263,3 +264,39 @@ def test_garbage_in_done_status(client):
 
     resp_update = client.put(f"/tasks/{task4_id}")
     assert resp_update.status_code == 200
+
+def test_sort_tasks_by_date_created(client):
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    task1_id = resp1.json["id"]
+
+    time.sleep(0.1)
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    task2_id = resp2.json["id"]
+
+    time.sleep(0.1)
+    
+    resp3 = client.post("/tasks", json={"title": "Задача 3"})
+    task3_id = resp3.json["id"]
+    
+    resp = client.get("/tasks?sort=created_at")
+    tasks = resp.json
+    assert [t["id"] for t in tasks] == [task1_id, task2_id, task3_id]
+
+def test_sort_tasks_by_date_created_desc(client):
+    resp1 = client.post("/tasks", json={"title": "Задача 1"})
+    task1_id = resp1.json["id"]
+
+    time.sleep(0.1)
+    
+    resp2 = client.post("/tasks", json={"title": "Задача 2"})
+    task2_id = resp2.json["id"]
+
+    time.sleep(0.1)
+    
+    resp3 = client.post("/tasks", json={"title": "Задача 3"})
+    task3_id = resp3.json["id"]
+    
+    resp = client.get("/tasks?sort=-created_at")
+    tasks = resp.json
+    assert [t["id"] for t in tasks] == [task3_id, task2_id, task1_id]
