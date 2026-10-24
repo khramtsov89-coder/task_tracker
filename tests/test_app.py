@@ -300,3 +300,11 @@ def test_sort_tasks_by_date_created_desc(client):
     resp = client.get("/tasks?sort=-created_at")
     tasks = resp.json
     assert [t["id"] for t in tasks] == [task3_id, task2_id, task1_id]
+
+def test_create_task_with_too_long_title(client):
+    resp = client.post("/tasks", json={"title": "a" * 101})
+    assert resp.status_code == 400
+    resp = client.post("/tasks", json={"title": "a" * 100})
+    assert resp.status_code == 201
+    resp = client.post("/tasks", json={"title": "a" * 10})
+    assert resp.status_code == 201

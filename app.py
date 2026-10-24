@@ -35,6 +35,9 @@ def create_task():
     title = data.get("title")
     if title is None or title.strip() == "":
         return jsonify({"error": "Title is required"}), 400
+    else:
+        if len(title) > 100:
+            return jsonify({"error": "Title is too long"}), 400
     title = title.strip()
     task = models.create_task(title)
     return jsonify(task), 201
