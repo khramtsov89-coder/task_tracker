@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify
+import os
+from dotenv import load_dotenv
 import models
+load_dotenv()
 
 app = Flask(__name__)
 models.init_db()
@@ -93,4 +96,6 @@ def mass_status_done():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    debug_mode = os.environ.get("FLASK_DEBUG", "1") == "1"
+    app.run(port=port, debug=debug_mode)
