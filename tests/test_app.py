@@ -308,3 +308,8 @@ def test_create_task_with_too_long_title(client):
     assert resp.status_code == 201
     resp = client.post("/tasks", json={"title": "a" * 10})
     assert resp.status_code == 201
+
+def test_health_check(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json == {"status": "ok"}

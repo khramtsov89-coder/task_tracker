@@ -94,6 +94,9 @@ def mass_status_done():
     all_tasks = models.get_all_tasks()
     return jsonify(all_tasks)
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "ok"}), 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
